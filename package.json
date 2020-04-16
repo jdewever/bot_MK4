@@ -1,0 +1,29 @@
+{
+  "name": "bot_mk4",
+  "version": "1.0.0",
+  "main": "bot.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "run": "tsc && DEBUG=* node out/run.js"
+  },
+  "dependencies": {
+    "@discordjs/opus": "^0.1.0",
+    "@types/debug": "^4.1.5",
+    "@types/line-reader": "0.0.28",
+    "@types/node": "^13.11.1",
+    "@types/node-fetch": "^2.5.6",
+    "@types/snekfetch": "^4.0.2",
+    "bufferutil": "^4.0.1",
+    "debug": "^4.1.1",
+    "discord.js": "^12.1.1",
+    "erlpack": "github:discordapp/erlpack",
+    "libsodium-wrappers": "^0.7.6",
+    "line-reader": "^0.4.0",
+    "snekfetch": "^4.0.4",
+    "utf-8-validate": "^5.0.2",
+    "youtube-playlist": "^1.0.2",
+    "yt-search": "^1.1.2",
+    "ytdl-core": "^2.1.0",
+    "zlib-sync": "^0.1.6"
+  }
+}
