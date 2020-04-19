@@ -28,11 +28,16 @@ export class Youtube {
 
 	searchVideo(str: string): Promise<string> {
 		return new Promise(async (res, rej) => {
-			const results: yts.SearchResult = await yts(str);
-			if (ytdl.getVideoID(results.videos[0].url)) {
-				res(results.videos[0].url);
-			} else {
-				rej('NO_VALID_SEARCH_RESULT');
+			try {
+				if (!str) throw new Error('NO_SEARCH_GIVEN');
+				const results: yts.SearchResult = await yts(str);
+				if (ytdl.validateURL(results.videos[0].url)) {
+					res(results.videos[0].url);
+				} else {
+					throw new Error('NO_VALID_SEARCH_RESULT');
+				}
+			} catch (err) {
+				rej(err);
 			}
 		});
 	}
@@ -80,7 +85,7 @@ export class Youtube {
 				};
 				res(obj);
 			} catch (err) {
-				this.bot.log.Error('@ Youtube.newGetInfo()');
+				this.bot.log.Error('@ Youtube.getInfo()');
 				rej(err);
 			}
 		});
@@ -93,7 +98,7 @@ export class Youtube {
 				else if (!auto) {
 					const searchRes = await this.searchVideo(args.join(' '));
 					res(ytdl.getVideoID(searchRes));
-				} else rej(null);
+				} else throw new Error('Youtube.getID()');
 			} catch (err) {
 				this.bot.log.Error(err);
 				rej();

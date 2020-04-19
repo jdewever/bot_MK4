@@ -9,6 +9,7 @@ import { Queue } from './util/Queue';
 import { Voice } from './util/Voice';
 import { AutoPlaylist } from './util/AutoPlaylist';
 import { Youtube } from './util/Youtube';
+import { PresenceHelp } from './util/PresenceHelp';
 
 // BOT CLASS
 export class Bot {
@@ -23,6 +24,7 @@ export class Bot {
 	public currentGuild: Guild;
 	public autoPL: AutoPlaylist;
 	public youtube: Youtube;
+	public Presence: PresenceHelp;
 
 	constructor() {
 		this.client = new Client();
@@ -34,10 +36,12 @@ export class Bot {
 			Error: debug('bot:error'),
 			Warn: debug('bot:warn'),
 			Info: debug('bot:info'),
+			Debug: debug('bot:debug'),
 		};
 		this.config = require('./config.json');
 		this.rootFolder = path.dirname(require.main.filename);
 
+		this.Presence = new PresenceHelp(this);
 		this.reddit = new Reddit(this);
 		this.Queue = new Queue();
 		this.autoPL = new AutoPlaylist(this);
@@ -51,8 +55,11 @@ export class Bot {
 		this.client.on('warn', this.log.Warn);
 
 		this.ch.registerEvents();
-		this.log.Info('rootFolder: ' + this.rootFolder);
 		this.client.login(this.config.token);
+		this.log.Info('rootFolder: ' + this.rootFolder);
+		this.client.setTimeout(() => {
+			this.Presence.idle();
+		}, 2000);
 	}
 }
 
@@ -62,4 +69,5 @@ export interface Logger {
 	Error: debug.Debugger;
 	Warn: debug.Debugger;
 	Info: debug.Debugger;
+	Debug: debug.Debugger;
 }

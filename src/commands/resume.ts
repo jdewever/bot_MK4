@@ -17,7 +17,7 @@ export class Resume {
 	async run() {
 		if (!this.bot.voice.dispatcher.paused) return this.msg.channel.send('The bot is not currently paused');
 
-		this.bot.voice.resume();
+        this.bot.voice.resume();
 	}
 }
 

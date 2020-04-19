@@ -1,8 +1,5 @@
 import { Bot } from '../Bot';
 import { eachLine } from 'line-reader';
-import { QueueVideo } from './Queue';
-import { VideoInfo } from './Youtube';
-import * as fs from 'fs';
 
 export class AutoPlaylist {
 	private bot: Bot;
@@ -26,36 +23,27 @@ export class AutoPlaylist {
 		return this.list;
 	}
 
-	get(): Promise<QueueVideo> {
-		return new Promise(async (res, rej) => {
-			if (this.list.length == 0) rej('AUTOPLAYLIST_EMPTY');
-			const url = this.randomUrl();
-			try {
-				const info: VideoInfo = await this.bot.youtube.getInfo([url]);
-				const newQueueObj: QueueVideo = this.bot.Queue.convert(info, null);
-				res(newQueueObj);
-			} catch (err) {
-				this.bot.log.Error('FAULTY_VIDEO_REQUEST @ AutoPlaylist.get()');
-				//this.removeFaulty(url);
-			}
-		});
+	inHistory(url: string): boolean {
+		if (this.history.indexOf(url) == -1) return false;
+		return true;
 	}
 
 	randomUrl(): string {
-		return this.list[Math.floor(Math.random() * this.list.length)];
+		const index = Math.floor(Math.random() * this.list.length);
+		const url = this.list[index];
+		if (url == '' || url.indexOf('watch') == -1) return this.randomUrl();
+		if (!this.inHistory(url)) {
+			this.history.push(url);
+			if (this.history.length >= this.list.length) {
+				this.history = [];
+			}
+			return url;
+		} else return this.randomUrl();
 	}
 
-	removeFaulty(url: string) {
-		const index = this.list.indexOf(url);
-		let arr = this.list.splice(index);
-		fs.writeFile(this.file, arr.join('\n'), (err) => {
-			if (err) return this.bot.log.Error('Faulty autoplaylist entry could not be deleted');
-			this.bot.log.Event('Faulty autoplaylist entry deleted');
-		});
-	}
-
-	inHistory(url: string): boolean {
-		if (this.history.indexOf(url) != -1) return true;
-		return false;
+	get(): string {
+		if (this.list.length == 0) return null;
+		const url = this.randomUrl();
+		return url;
 	}
 }

@@ -2,16 +2,15 @@ import { Bot } from '../Bot';
 import { Queue, QueueVideo } from './Queue';
 import { StreamDispatcher, VoiceConnection, VoiceChannel, VoiceState } from 'discord.js';
 import { Readable } from 'stream';
+import { VideoInfo } from './Youtube';
 
 export class Voice {
 	private bot: Bot;
-	private queue: Queue;
 	private vol: number; // float
 	private playingNow: QueueVideo;
 
 	constructor(bot_: Bot) {
 		this.bot = bot_;
-		this.queue = this.bot.Queue;
 		this.vol = this.bot.config.defaultVolume / 100;
 		this.playingNow = null;
 	}
@@ -61,27 +60,24 @@ export class Voice {
 	}
 
 	async startPlaying() {
-		if (this.playing || !this.connected) return false;
+		try {
+			if (this.playing || !this.connected) return false;
 
-		if (this.bot.Queue.isEmpty()) {
-			/*
-			this.bot.autoPL
-				.get()
-				.then((res) => {
-					this.bot.Queue.add(res);
-				})
-				.catch((err) => {
-					return this.startPlaying();
-                });
-            */
-			return;
+			if (this.bot.Queue.isEmpty()) {
+				const url = this.bot.autoPL.get();
+				const info: VideoInfo = await this.bot.youtube.getInfo([url]);
+
+				const queueObj: QueueVideo = this.bot.Queue.convert(info, null);
+				this.bot.Queue.add(queueObj);
+			}
+
+			const song: QueueVideo = this.bot.Queue.get(1);
+			const stream: Readable = this.bot.youtube.getStream(song.url);
+			this.connection.play(stream, { volume: this.volume });
+			this.registerDispatchEvents();
+		} catch (err) {
+			return this.startPlaying();
 		}
-
-		const song: QueueVideo = this.bot.Queue.get(1);
-		if (!song) return this.startPlaying();
-		const stream: Readable = this.bot.youtube.getStream(song.url);
-		this.connection.play(stream, { volume: this.volume });
-		this.registerDispatchEvents();
 	}
 
 	get nowPlaying(): QueueVideo {
@@ -94,10 +90,12 @@ export class Voice {
 		dispatch.on('start', () => {
 			this.playingNow = this.bot.Queue.shift();
 			this.bot.log.Info(`Playing: ${this.playingNow.title}`);
+			this.bot.Presence.listening(this.playingNow.title);
 		});
 
 		dispatch.on('finish', async (reason) => {
 			this.playingNow = null;
+			this.bot.Presence.idle();
 			this.startPlaying();
 		});
 	}
