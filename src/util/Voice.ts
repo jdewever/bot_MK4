@@ -98,10 +98,6 @@ export class Voice {
 
 		dispatch.on('finish', async (reason) => {
 			this.playingNow = null;
-			if (this.bot.Queue.isEmpty()) {
-				const newSong = await this.bot.autoPL.get();
-				if (newSong) this.bot.Queue.add(newSong);
-			}
 			this.startPlaying();
 		});
 	}
