@@ -15,6 +15,7 @@ export class Skip {
 	}
 
 	async run() {
+		if (!this.bot.voice.playing) return this.msg.channel.send('The bot is not playing anything rn');
 		this.bot.voice.skip();
 	}
 }

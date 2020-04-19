@@ -17,6 +17,7 @@ export class NowPlaying {
 
 	async run() {
 		const np: QueueVideo = this.bot.voice.nowPlaying;
+		if (!np) return this.msg.channel.send('Nothing is playing rn');
 		this.msg.channel.send(`Now playing: \`${np.title}\``);
 	}
 }

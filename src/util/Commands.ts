@@ -18,7 +18,7 @@ export class Commands {
 			const req = await import(cmdFile);
 			await req.getClass(msg, command, args, this.bot).run();
 		} catch (err) {
-			this.bot.log.Error(err);
+			msg.channel.send('This command does not exist');
 		}
 	}
 }

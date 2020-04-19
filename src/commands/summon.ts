@@ -16,9 +16,10 @@ export class Summon {
 
 	async run() {
 		if (!this.msg.member.voice.channel) return this.msg.channel.send('You must be in a voice channel to to that.');
-		this.bot.voice.join(this.msg.member.voice.channel);
-		this.bot.log.Event(`Connected to voice in ${this.msg.member.voice.channel.name}`);
-		this.bot.voice.startPlaying();
+		this.msg.member.voice.channel.join().then(() => {
+			this.bot.log.Event(`Connected to voice in ${this.msg.member.voice.channel.name}`);
+			this.bot.voice.startPlaying();
+		});
 	}
 }
 

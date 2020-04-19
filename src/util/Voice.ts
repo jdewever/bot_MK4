@@ -1,6 +1,6 @@
 import { Bot } from '../Bot';
 import { Queue, QueueVideo } from './Queue';
-import { StreamDispatcher, VoiceConnection, VoiceChannel } from 'discord.js';
+import { StreamDispatcher, VoiceConnection, VoiceChannel, VoiceState } from 'discord.js';
 import { Readable } from 'stream';
 
 export class Voice {
@@ -30,7 +30,7 @@ export class Voice {
 	}
 
 	get connection(): VoiceConnection {
-		let voice = this.bot.currentGuild.voice;
+		let voice: VoiceState = this.bot.currentGuild.voice;
 		if (voice) return voice.connection;
 		return null;
 	}
@@ -60,10 +60,25 @@ export class Voice {
 		this.dispatcher.end();
 	}
 
-	startPlaying(): boolean {
-		if (this.playing || !this.connected || this.bot.Queue.isEmpty()) return false;
+	async startPlaying() {
+		if (this.playing || !this.connected) return false;
+
+		if (this.bot.Queue.isEmpty()) {
+			/*
+			this.bot.autoPL
+				.get()
+				.then((res) => {
+					this.bot.Queue.add(res);
+				})
+				.catch((err) => {
+					return this.startPlaying();
+                });
+            */
+			return;
+		}
 
 		const song: QueueVideo = this.bot.Queue.get(1);
+		if (!song) return this.startPlaying();
 		const stream: Readable = this.bot.youtube.getStream(song.url);
 		this.connection.play(stream, { volume: this.volume });
 		this.registerDispatchEvents();

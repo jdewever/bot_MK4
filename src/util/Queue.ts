@@ -17,6 +17,12 @@ export class Queue {
 		return this.queue_;
 	}
 
+	addPL(els: QueueVideo[]): QueueVideo[] {
+		const newArr = this.queue_.concat(els);
+		this.queue_ = newArr;
+		return this.queue_;
+	}
+
 	get(pos: number): QueueVideo {
 		if (pos == null) return null;
 		const el = this.queue_[pos - 1];
@@ -67,8 +73,9 @@ export class Queue {
 		this.queue_ = newQueue;
 	}
 
-	convert(obj: VideoInfo): QueueVideo {
-		let newObj = { ...obj, ...{ queuedBy: null } };
+	convert(obj: VideoInfo, user: User): QueueVideo {
+		let newObj = { ...obj, ...{ queuedBy: user } };
+		newObj['queuedBy'] = user;
 		return newObj;
 	}
 }
