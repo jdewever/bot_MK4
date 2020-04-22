@@ -1,6 +1,7 @@
 {
-    "prefix": "?",
+    "prefix": ".",
     "commandfolder": "commands",
     "token": "PSYCH_NO_KEY_HERE",
-    "defaultVolume": 10
+    "defaultVolume": 10,
+    "ownerID": "PSYCH_NO_ID_HERE"
 }

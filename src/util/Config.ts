@@ -3,4 +3,5 @@ export interface Config {
 	commandfolder: string;
 	token: string;
 	defaultVolume: number;
+	ownerID: string;
 }

@@ -1,6 +1,7 @@
 import { Client, Message } from 'discord.js';
 import { Bot, Logger } from '../Bot';
 import { Commands } from './Commands';
+import { type } from 'os';
 
 export class Common {
 	private bot: Bot;
@@ -19,6 +20,17 @@ export class Common {
 		this.bot.client.on('ready', () => readyEvent(this.bot));
 		this.bot.client.on('message', (msg) => messageEvent(this.bot, msg, this.cmd));
 	}
+
+	timeFormat = (time: number) => {
+		const hrs = ~~(time / 3600);
+		const mins = ~~((time % 3600) / 60);
+		const secs = ~~time % 60;
+
+		let returnTime = '';
+		if (hrs > 0) returnTime += `${hrs}:${mins < 10 ? '0' : ''}`;
+		returnTime += `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+		return returnTime;
+	};
 }
 
 const readyEvent = (bot: Bot) => {

@@ -21,6 +21,7 @@ export class Volume {
 		if (!num || num < 1 || num > 100) return this.msg.channel.send('Wrong parameter(s)');
 
 		this.bot.voice.volume = num;
+		this.msg.channel.send(`Changed volume to: ${num}%`);
 	}
 }
 

@@ -1,7 +1,8 @@
 import { Message } from 'discord.js';
 import { Bot } from '../Bot';
+import { QueueVideo } from '../util/Queue';
 
-export class Ping {
+export class Restart {
 	private bot: Bot;
 	private msg: Message;
 	private cmd: string;
@@ -15,10 +16,14 @@ export class Ping {
 	}
 
 	async run() {
-		const sent = await this.msg.channel.send('pong!');
+		if (!this.bot.voice.playing) return this.msg.channel.send('The bot is not currently playing anything');
+		const vid: QueueVideo = this.bot.voice.nowPlaying;
+		this.bot.Queue.first(vid);
+		this.bot.voice.skip();
+		this.msg.channel.send(`Restarted: \`${vid.title}\``);
 	}
 }
 
 export const getClass = (msg: Message, cmd: string, args: string[], bot: Bot) => {
-	return new Ping(msg, cmd, args, bot);
+	return new Restart(msg, cmd, args, bot);
 };

@@ -31,12 +31,12 @@ export class Bot {
 		this.ch = new Common(this);
 
 		this.log = {
-			System: debug('bot:system'),
-			Event: debug('bot:event'),
-			Error: debug('bot:error'),
-			Warn: debug('bot:warn'),
-			Info: debug('bot:info'),
-			Debug: debug('bot:debug'),
+			System: debug(`system`),
+			Event: debug(`event`),
+			Error: debug(`error`),
+			Warn: debug(`warn`),
+			Info: debug(`info`),
+			Debug: debug(`debug`),
 		};
 		this.config = require('./config.json');
 		this.rootFolder = path.dirname(require.main.filename);
@@ -59,7 +59,7 @@ export class Bot {
 		this.log.Info('rootFolder: ' + this.rootFolder);
 		this.client.setTimeout(() => {
 			this.Presence.idle();
-		}, 2000);
+		}, 5000);
 	}
 }
 

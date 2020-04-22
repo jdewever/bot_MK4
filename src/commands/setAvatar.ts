@@ -1,7 +1,7 @@
 import { Message } from 'discord.js';
 import { Bot } from '../Bot';
 
-export class Ping {
+export class setAvatar {
 	private bot: Bot;
 	private msg: Message;
 	private cmd: string;
@@ -15,10 +15,12 @@ export class Ping {
 	}
 
 	async run() {
-		const sent = await this.msg.channel.send('pong!');
+		if (this.msg.author.id != this.bot.config.ownerID) return this.msg.channel.send("You're not meep");
+		const img = this.args[0];
+		this.bot.client.user.setAvatar(img);
 	}
 }
 
 export const getClass = (msg: Message, cmd: string, args: string[], bot: Bot) => {
-	return new Ping(msg, cmd, args, bot);
+	return new setAvatar(msg, cmd, args, bot);
 };

@@ -18,7 +18,14 @@ export class NowPlaying {
 	async run() {
 		const np: QueueVideo = this.bot.voice.nowPlaying;
 		if (!np) return this.msg.channel.send('Nothing is playing rn');
-		this.msg.channel.send(`Now playing: \`${np.title}\``);
+		const time: Array<number> = [];
+		time.push(this.bot.voice.timePlayed);
+		time.push(this.bot.voice.playLength);
+		this.msg.channel.send(
+			`Now playing: \`${np.title}\`\n:stopwatch:\`${this.bot.ch.timeFormat(
+				time[0]
+			)}\` from \`${this.bot.ch.timeFormat(time[1])}\``
+		);
 	}
 }
 

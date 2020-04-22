@@ -16,7 +16,9 @@ export class Skip {
 
 	async run() {
 		if (!this.bot.voice.playing) return this.msg.channel.send('The bot is not playing anything rn');
+		const toSkip = this.bot.voice.nowPlaying;
 		this.bot.voice.skip();
+		this.msg.channel.send(`Skipped \`${toSkip.title}\``);
 	}
 }
 

@@ -17,6 +17,7 @@ export class Exit {
 	async run() {
 		this.msg.channel.send('Buh bye :wave:').then(() => {
 			this.bot.client.destroy();
+			this.bot.log.Warn('Shutting down...');
 			setTimeout(() => process.exit(0), 1500);
 		});
 	}

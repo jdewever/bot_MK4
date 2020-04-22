@@ -8,11 +8,13 @@ export class Voice {
 	private bot: Bot;
 	private vol: number; // float
 	private playingNow: QueueVideo;
+	private previousSpeakingState: boolean;
 
 	constructor(bot_: Bot) {
 		this.bot = bot_;
 		this.vol = this.bot.config.defaultVolume / 100;
 		this.playingNow = null;
+		this.previousSpeakingState = false;
 	}
 
 	get dispatcher(): StreamDispatcher {
@@ -73,8 +75,9 @@ export class Voice {
 
 			const song: QueueVideo = this.bot.Queue.get(1);
 			const stream: Readable = this.bot.youtube.getStream(song.url);
-			this.connection.play(stream, { volume: this.volume });
-			this.registerDispatchEvents();
+			this.registerStreamEvents(stream);
+			this.connection.play(stream, { volume: this.volume, highWaterMark: 16 });
+			this.registerDispatchEvents(stream);
 		} catch (err) {
 			return this.startPlaying();
 		}
@@ -84,19 +87,58 @@ export class Voice {
 		return this.playingNow;
 	}
 
-	registerDispatchEvents() {
+	registerDispatchEvents(stream: Readable) {
 		const dispatch: StreamDispatcher = this.dispatcher;
 
 		dispatch.on('start', () => {
+			this.bot.log.Event(`(${new Date().toLocaleTimeString()}) Dispatcher start`);
 			this.playingNow = this.bot.Queue.shift();
-			this.bot.log.Info(`Playing: ${this.playingNow.title}`);
 			this.bot.Presence.listening(this.playingNow.title);
 		});
 
 		dispatch.on('finish', async (reason) => {
+			this.bot.log.Event(`(${new Date().toLocaleTimeString()}) Dispatcher finish`);
+			stream.destroy();
 			this.playingNow = null;
 			this.bot.Presence.idle();
+			this.bot.log.Event(`(${new Date().toLocaleTimeString()}) Dispatcher end`);
 			this.startPlaying();
+		});
+
+		dispatch.on('close', () => {
+			this.bot.log.Event(`(${new Date().toLocaleTimeString()}) Dispatcher close`);
+		});
+		dispatch.on('error', (reason) => {
+			this.bot.log.Event(`(${new Date().toLocaleTimeString()}) Dispatcher error: ${reason}`);
+		});
+		dispatch.on('speaking', (bool) => {
+			if (bool != this.previousSpeakingState) {
+				this.bot.log.Event(`(${new Date().toLocaleTimeString()}) Dispatcher speaking: ${bool}`);
+				this.previousSpeakingState = bool;
+			}
+		});
+	}
+
+	get timePlayed(): number {
+		return this.dispatcher.streamTime / 1000;
+	}
+
+	get playLength(): number {
+		return this.nowPlaying.length;
+	}
+
+	registerStreamEvents(stream: Readable) {
+		stream.on('error', (err) => {
+			this.bot.log.Error(`(${new Date().toLocaleTimeString()}) Stream error: ${err}`);
+		});
+		stream.on('end', () => {
+			this.bot.log.Event(`(${new Date().toLocaleTimeString()}) Stream end`);
+		});
+		stream.on('close', () => {
+			this.bot.log.Event(`(${new Date().toLocaleTimeString()}) Stream close`);
+		});
+		stream.on('resume', () => {
+			this.bot.log.Event(`(${new Date().toLocaleTimeString()}) Stream resume`);
 		});
 	}
 

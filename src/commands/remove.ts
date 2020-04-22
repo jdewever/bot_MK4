@@ -21,7 +21,8 @@ export class Remove {
 
 		if (index > this.bot.Queue.length || index < 1) return this.msg.channel.send('Wrong / missing parameters');
 
-		this.bot.Queue.remove(index - 1, 1);
+        this.bot.Queue.remove(index - 1, 1);
+        this.msg.channel.send(`Removed song at position ${index}`)
 	}
 }
 

@@ -1,0 +1,136 @@
+{
+    "help": {
+        "description": "Displays available commands and a description.",
+        "usage": [
+            "help"
+        ]
+    },
+    "play": {
+        "description": "Queues a song to play in Discord. Can receive a video-url of search terms.",
+        "usage": [
+            "play {URL}",
+            "play {search terms}"
+        ]
+    },
+    "aww": {
+        "description": "Sends a cute picture from r/aww into your channel.",
+        "usage": [
+            "aww"
+        ]
+    },
+    "disconnect": {
+        "description": "Disconnects the bot from the voiceChannel it's connected to.",
+        "usage": [
+            "disconnect"
+        ]
+    },
+    "dmg": {
+        "description": "Gets a __dank__ meme from r/dankmemesgang, deletes it and send a shitty meme to your channel.",
+        "usage": [
+            "dmg"
+        ]
+    },
+    "exit": {
+        "description": "Boops the bot into death.",
+        "usage": [
+            "disconnect"
+        ]
+    },
+    "kitty": {
+        "description": "Sends you a kitty that makes you go `awwwwww`.",
+        "usage": [
+            "kitty"
+        ]
+    },
+    "move": {
+        "description": "Moves song at position X to position Y.",
+        "usage": [
+            "move {x} {y}"
+        ]
+    },
+    "np": {
+        "description": "Tells you which song is playing at the moment.",
+        "usage": [
+            "np"
+        ]
+    },
+    "pause": {
+        "description": "Pauses the song, when playing, duh.",
+        "usage": [
+            "pause"
+        ]
+    },
+    "ping": {
+        "description": "Pong!",
+        "usage": [
+            "ping"
+        ]
+    },
+    "playnext": {
+        "description": "Plays a song, but places it next up in the queue.",
+        "usage": [
+            "playnext {URL}",
+            "playnext {search terms}"
+        ]
+    },
+    "playpl": {
+        "description": "Queues a playlist of videos to be played.",
+        "usage": [
+            "playpl {PlaylistURL}"
+        ]
+    },
+    "purge": {
+        "description": "Performs a purge on the messages sent by the bot, and sent to the bot.",
+        "usage": [
+            "purge"
+        ]
+    },
+    "queue": {
+        "description": "Tells you which songs are currently queued.",
+        "usage": [
+            "queue"
+        ]
+    },
+    "remove": {
+        "description": "Yeets a song at X position in the queue.",
+        "usage": [
+            "remove {x}"
+        ]
+    },
+    "restart": {
+        "description": "Starts the current song from te start.",
+        "usage": [
+            "restart"
+        ]
+    },
+    "resume": {
+        "description": "Resumes playing, if paused.",
+        "usage": [
+            "resume"
+        ]
+    },
+    "shuffle": {
+        "description": "Shuffles the queue.",
+        "usage": [
+            "shuffle"
+        ]
+    },
+    "skip": {
+        "description": "Skips current song.",
+        "usage": [
+            "skip"
+        ]
+    },
+    "summon": {
+        "description": "Summons bot into your current voiceChannel.",
+        "usage": [
+            "summon"
+        ]
+    },
+    "volume": {
+        "description": "Changes current volume. Displays it when no argument given",
+        "usage": [
+            "volume [vol]"
+        ]
+    }
+}

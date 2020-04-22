@@ -17,7 +17,8 @@ export class Pause {
 	async run() {
 		if (!this.bot.voice.playing) return this.msg.channel.send('The bot is not currently playing');
 
-		this.bot.voice.pause();
+        this.bot.voice.pause();
+        this.msg.channel.send("Paused")
 	}
 }
 
