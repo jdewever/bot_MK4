@@ -1,6 +1,6 @@
 import { Message } from 'discord.js';
 import { Bot } from '../Bot';
-import { VideoInfo } from '../util/Youtube';
+import { VideoInfo, DownloadObject } from '../util/Youtube';
 import { QueueVideo } from '../util/Queue';
 
 export class Play {
@@ -23,6 +23,14 @@ export class Play {
 			if (!info) throw new Error();
 
 			const newQueueObj: QueueVideo = this.bot.Queue.convert(info, this.msg.author);
+
+			if (this.bot.config.download) {
+				const down: DownloadObject = this.bot.youtube.download(newQueueObj);
+				down.stream.on('finish', () => {
+                    newQueueObj.filePath = down.location;
+				});
+			}
+
 			this.bot.Queue.add(newQueueObj);
 			this.msg.channel.send(`\`${newQueueObj.title}\` added to queue!`);
 			this.bot.log.Event(`\`${newQueueObj.title}\` added to queue!`);

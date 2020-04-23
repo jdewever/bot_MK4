@@ -4,4 +4,7 @@ export interface Config {
 	token: string;
 	defaultVolume: number;
 	ownerID: string;
+	tempFolder: string;
+	download: boolean;
+	autoplaylist: boolean;
 }
