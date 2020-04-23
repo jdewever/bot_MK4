@@ -87,6 +87,7 @@ export interface QueueVideo {
 	length: number;
 	thumbnail: string;
 	queuedBy: User;
+	filePath?: string;
 }
 
 const shuffleQueue = (original: QueueVideo[]): QueueVideo[] => {

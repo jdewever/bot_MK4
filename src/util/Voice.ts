@@ -2,19 +2,23 @@ import { Bot } from '../Bot';
 import { Queue, QueueVideo } from './Queue';
 import { StreamDispatcher, VoiceConnection, VoiceChannel, VoiceState } from 'discord.js';
 import { Readable } from 'stream';
-import { VideoInfo } from './Youtube';
+import { VideoInfo, DownloadObject } from './Youtube';
 
 export class Voice {
 	private bot: Bot;
 	private vol: number; // float
 	private playingNow: QueueVideo;
 	private previousSpeakingState: boolean;
+	private playopts: playOptions;
 
 	constructor(bot_: Bot) {
 		this.bot = bot_;
 		this.vol = this.bot.config.defaultVolume / 100;
 		this.playingNow = null;
 		this.previousSpeakingState = false;
+		this.playopts = {
+			highWaterMark: 16,
+		};
 	}
 
 	get dispatcher(): StreamDispatcher {
@@ -66,18 +70,32 @@ export class Voice {
 			if (this.playing || !this.connected) return false;
 
 			if (this.bot.Queue.isEmpty()) {
+				if (!this.bot.config.autoplaylist) return null;
 				const url = this.bot.autoPL.get();
 				const info: VideoInfo = await this.bot.youtube.getInfo([url]);
 
 				const queueObj: QueueVideo = this.bot.Queue.convert(info, null);
+
+				if (this.bot.config.download) {
+					const down: DownloadObject = this.bot.youtube.download(queueObj);
+					down.stream.on('finish', () => {
+						queueObj.filePath = down.location;
+					});
+				}
 				this.bot.Queue.add(queueObj);
 			}
 
 			const song: QueueVideo = this.bot.Queue.get(1);
-			const stream: Readable = this.bot.youtube.getStream(song.url);
-			this.registerStreamEvents(stream);
-			this.connection.play(stream, { volume: this.volume, highWaterMark: 16 });
-			this.registerDispatchEvents(stream);
+
+			if (!song.filePath) {
+				const stream: Readable = this.bot.youtube.getStream(song.url);
+				this.registerStreamEvents(stream);
+				this.connection.play(stream, { ...this.playopts, ...{ volume: this.vol } });
+			} else {
+				this.connection.play(song.filePath, { ...this.playopts, ...{ volume: this.vol } });
+			}
+
+			this.registerDispatchEvents();
 		} catch (err) {
 			return this.startPlaying();
 		}
@@ -87,7 +105,7 @@ export class Voice {
 		return this.playingNow;
 	}
 
-	registerDispatchEvents(stream: Readable) {
+	registerDispatchEvents() {
 		const dispatch: StreamDispatcher = this.dispatcher;
 
 		dispatch.on('start', () => {
@@ -98,7 +116,6 @@ export class Voice {
 
 		dispatch.on('finish', async (reason) => {
 			this.bot.log.Event(`(${new Date().toLocaleTimeString()}) Dispatcher finish`);
-			stream.destroy();
 			this.playingNow = null;
 			this.bot.Presence.idle();
 			this.bot.log.Event(`(${new Date().toLocaleTimeString()}) Dispatcher end`);
@@ -120,7 +137,7 @@ export class Voice {
 	}
 
 	get timePlayed(): number {
-		return this.dispatcher.streamTime / 1000;
+		return (this.bot.voice.dispatcher.streamTime - this.bot.voice.dispatcher.pausedTime) / 1000;
 	}
 
 	get playLength(): number {
@@ -149,4 +166,8 @@ export class Voice {
 	resume() {
 		this.dispatcher.resume();
 	}
+}
+
+interface playOptions {
+	highWaterMark: number;
 }

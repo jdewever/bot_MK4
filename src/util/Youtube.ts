@@ -2,16 +2,31 @@ import { Bot } from '../Bot';
 import ytdl = require('ytdl-core');
 import * as yts from 'yt-search';
 import { Readable } from 'stream';
+import { QueueVideo } from './Queue';
+import * as fs from 'fs';
+import * as path from 'path';
 
 export class Youtube {
 	private bot: Bot;
 	private ytOptions: Object;
+	private folder: string;
 
 	constructor(_bot: Bot) {
 		this.bot = _bot;
 		this.ytOptions = { filter: 'audioonly' };
+
+		fs.promises
+			.mkdir(path.resolve(this.bot.rootFolder, this.bot.config.tempFolder), { recursive: true })
+			.then(() => {
+				this.folder = path.resolve(this.bot.rootFolder, this.bot.config.tempFolder);
+				this.bot.log.Info(`Temporary folder exists or created at: ${this.folder}`);
+			})
+			.catch((err) => {
+				this.bot.log.Error("Can't create temp Folder" + err);
+			});
 	}
 
+	/*
 	getIDOLD(args: string[], auto?: boolean): Promise<string> {
 		return new Promise(async (res, rej) => {
 			if (!args || args.length == 0 || (args.length == 1 && args[0] == '')) rej(null);
@@ -24,7 +39,8 @@ export class Youtube {
 				res(id);
 			}
 		});
-	}
+    }
+    */
 
 	searchVideo(str: string): Promise<string> {
 		return new Promise(async (res, rej) => {
@@ -42,6 +58,7 @@ export class Youtube {
 		});
 	}
 
+	/*
 	getInfoOLD(id: string, auto?: boolean): Promise<VideoInfo> {
 		return new Promise(async (res, rej) => {
 			try {
@@ -58,7 +75,8 @@ export class Youtube {
 				res(null);
 			}
 		});
-	}
+    }
+    */
 
 	getStream(url: string): Readable {
 		return ytdl(url, this.ytOptions);
@@ -105,6 +123,15 @@ export class Youtube {
 			}
 		});
 	}
+
+	download(obj: QueueVideo): DownloadObject {
+		if (!obj || !this.folder) return null;
+
+		const downStream: Readable = ytdl(obj.url, this.ytOptions);
+		const downPath: string = path.resolve(this.folder, `${obj.id}.mp3`);
+		const writeStream: fs.WriteStream = downStream.pipe(fs.createWriteStream(downPath));
+		return { stream: writeStream, location: downPath };
+	}
 }
 
 export interface VideoInfo {
@@ -113,4 +140,9 @@ export interface VideoInfo {
 	id: string;
 	length: number;
 	thumbnail: string;
+}
+
+export interface DownloadObject {
+	stream: fs.WriteStream;
+	location: string;
 }
