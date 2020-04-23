@@ -6,3 +6,4 @@ getPlaylistURLS.js
 out/
 autoplaylist.txt
 pl.txt
+*.code-workspace
