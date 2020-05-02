@@ -18,21 +18,19 @@ export class Status {
 		const isPlaying: string = this.bot.voice.playing ? 'True' : 'False';
 		const nowPlaying: string = this.bot.voice.nowPlaying.title;
 		const volume: string = this.bot.voice.volume.toString();
-		const speaking: string = this.bot.voice.connection.speaking ? 'True' : 'False';
-		const voiceSpeaking: string = this.bot.voice.connection.voice.speaking ? 'True' : 'False';
+		const voiceSpeaking: boolean = this.bot.voice.connection.voice.speaking;
 
 		let txt = '';
 		txt += `Playing: \`${isPlaying}\`\n`;
 		txt += `Now Playing: \`${nowPlaying}\`\n`;
 		txt += `Volume: \`${volume}\`\n`;
-		txt += `Speaking: \`${speaking}\`\n`;
 		txt += `Voice Speaking: \`${voiceSpeaking}\`\n`;
 		txt += `Stream Time: \`${this.bot.ch.timeFormat(this.bot.voice.dispatcher.streamTime / 1000)}\`\n`;
 		txt += `Total Stream Time: \`${this.bot.ch.timeFormat(this.bot.voice.dispatcher.totalStreamTime / 1000)}\`\n`;
 		txt += `Paused Time: \`${this.bot.ch.timeFormat(this.bot.voice.dispatcher.pausedTime / 1000)}\`\n`;
 		txt += `Real Time: \`${this.bot.ch.timeFormat(
 			(this.bot.voice.dispatcher.streamTime - this.bot.voice.dispatcher.pausedTime) / 1000
-		)}\`\n`;
+        )}\`\n`;
 
 		this.msg.channel.send(txt);
 	}

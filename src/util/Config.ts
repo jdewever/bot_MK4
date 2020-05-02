@@ -7,4 +7,5 @@ export interface Config {
 	tempFolder: string;
 	download: boolean;
 	autoplaylist: boolean;
+	pastebin_key: string;
 }

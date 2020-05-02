@@ -2,9 +2,10 @@ import { Bot } from '../Bot';
 import ytdl = require('ytdl-core');
 import * as yts from 'yt-search';
 import { Readable } from 'stream';
-import { QueueVideo } from './Queue';
+import { QueueVideo, Queue } from './Queue';
 import * as fs from 'fs';
 import * as path from 'path';
+import ffmpeg = require('fluent-ffmpeg');
 
 export class Youtube {
 	private bot: Bot;
@@ -13,7 +14,7 @@ export class Youtube {
 
 	constructor(_bot: Bot) {
 		this.bot = _bot;
-		this.ytOptions = { filter: 'audioonly' };
+		this.ytOptions = { highWaterMark: 1 << 25 };
 
 		fs.promises
 			.mkdir(path.resolve(this.bot.rootFolder, this.bot.config.tempFolder), { recursive: true })
@@ -127,10 +128,21 @@ export class Youtube {
 	download(obj: QueueVideo): DownloadObject {
 		if (!obj || !this.folder) return null;
 
-		const downStream: Readable = ytdl(obj.url, this.ytOptions);
+		const downStream: Readable = this.getStream(obj.url);
 		const downPath: string = path.resolve(this.folder, `${obj.id}.mp3`);
 		const writeStream: fs.WriteStream = downStream.pipe(fs.createWriteStream(downPath));
 		return { stream: writeStream, location: downPath };
+	}
+
+	downloadMP3(obj: QueueVideo): MP3DownloadObject {
+		if (!obj || !this.folder) return null;
+
+		const downStream: Readable = this.getStream(obj.url);
+		const downPath: string = path.resolve(this.folder, `${obj.id}.mp3`);
+
+		const down = ffmpeg(downStream).audioBitrate(128).save(downPath);
+
+		return { stream: down, location: downPath };
 	}
 }
 
@@ -144,5 +156,10 @@ export interface VideoInfo {
 
 export interface DownloadObject {
 	stream: fs.WriteStream;
+	location: string;
+}
+
+export interface MP3DownloadObject {
+	stream: ffmpeg.FfmpegCommand;
 	location: string;
 }

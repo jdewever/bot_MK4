@@ -1,6 +1,8 @@
 import { Client, Guild } from 'discord.js';
 import * as debug from 'debug';
 import * as path from 'path';
+const pb = require('pastebin-ts');
+// import {PastebinAPI} from "pastebin-ts"
 
 import { Common } from './util/Common';
 import { Config } from './util/Config';
@@ -25,6 +27,7 @@ export class Bot {
 	public autoPL: AutoPlaylist;
 	public youtube: Youtube;
 	public Presence: PresenceHelp;
+	public paste /*: PastebinAPI*/;
 
 	constructor() {
 		this.client = new Client();
@@ -38,16 +41,18 @@ export class Bot {
 			Info: debug(`info`),
 			Debug: debug(`debug`),
 		};
+
 		this.config = require('./config.json');
 		this.rootFolder = path.dirname(require.main.filename);
 
 		this.Presence = new PresenceHelp(this);
 		this.reddit = new Reddit(this);
-		this.Queue = new Queue();
+		this.Queue = new Queue(this);
 		this.autoPL = new AutoPlaylist(this);
 		this.youtube = new Youtube(this);
 		this.voice = new Voice(this);
 		this.currentGuild = null;
+		this.paste = new pb(this.config.pastebin_key);
 	}
 
 	public start(): void {

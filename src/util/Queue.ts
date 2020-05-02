@@ -1,11 +1,15 @@
 import { User } from 'discord.js';
 import { VideoInfo } from './Youtube';
+import * as fs from 'fs';
+import { Bot } from '../Bot';
 
 export class Queue {
 	private queue_: QueueVideo[];
+	private bot: Bot;
 
-	constructor() {
+	constructor(bot_: Bot) {
 		this.queue_ = [];
+		this.bot = bot_;
 	}
 
 	get queue(): QueueVideo[] {
@@ -58,7 +62,7 @@ export class Queue {
 		return this.queue_;
 	}
 
-	toString(): string {
+	format(): string {
 		let out = '';
 		this.queue_.map((el, i) => {
 			out += `**[${i + 1}]** - \`${el.title}\`\n`;
@@ -77,6 +81,29 @@ export class Queue {
 		let newObj = { ...obj, ...{ queuedBy: user } };
 		newObj['queuedBy'] = user;
 		return newObj;
+	}
+
+	save() {
+		const str: string = this.toString();
+		if (str == '') return false;
+
+		fs.promises
+			.writeFile(this.bot.rootFolder + 'savedQueue.json', str)
+			.then(() => {
+				this.bot.log.Event('Queue saved to disk.');
+			})
+			.catch((err) => {
+				this.bot.log.Error(err);
+			});
+    }
+    
+    load() {
+        
+    }
+
+	toString(): string {
+		if (this.isEmpty) return '';
+		return JSON.stringify(this.queue_, null, 4);
 	}
 }
 

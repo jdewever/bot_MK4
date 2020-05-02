@@ -10,25 +10,30 @@
     "@discordjs/opus": "^0.1.0",
     "@types/debug": "^4.1.5",
     "@types/line-reader": "0.0.28",
-    "@types/node": "^13.11.1",
-    "@types/node-fetch": "^2.5.6",
+    "@types/node": "^13.13.3",
+    "@types/node-fetch": "^2.5.7",
     "@types/snekfetch": "^4.0.2",
     "@types/yt-search": "^1.1.0",
     "bufferutil": "^4.0.1",
     "debug": "^4.1.1",
     "discord.js": "^12.2.0",
     "erlpack": "github:discordapp/erlpack",
+    "ffmpeg-static": "^4.1.1",
+    "fluent-ffmpeg": "^2.1.2",
     "libsodium-wrappers": "^0.7.6",
     "line-reader": "^0.4.0",
+    "pastebin-ts": "^1.2.0",
+    "prism-media": "github:hydrabolt/prism-media",
     "snekfetch": "^4.0.4",
     "supports-color": "^7.1.0",
     "utf-8-validate": "^5.0.2",
     "yt-search": "^1.1.2",
-    "ytdl-core": "^2.1.0",
+    "ytdl-core": "^2.1.1",
     "ytpl": "^0.1.20",
     "zlib-sync": "^0.1.6"
   },
   "devDependencies": {
+    "@types/fluent-ffmpeg": "^2.1.14",
     "youtube-playlist": "^1.0.2"
   }
 }

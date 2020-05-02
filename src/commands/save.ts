@@ -1,7 +1,7 @@
 import { Message } from 'discord.js';
 import { Bot } from '../Bot';
 
-export class Queue {
+export class Save {
 	private bot: Bot;
 	private msg: Message;
 	private cmd: string;
@@ -15,11 +15,13 @@ export class Queue {
 	}
 
 	async run() {
-		const queueString = this.bot.Queue.format();
-		this.msg.channel.send(queueString);
+		if (!this.bot.Queue.isEmpty) {
+			this.bot.Queue.save();
+			return this.msg.channel.send('Queue saved');
+		} else return this.msg.channel.send('Nothing to save...');
 	}
 }
 
 export const getClass = (msg: Message, cmd: string, args: string[], bot: Bot) => {
-	return new Queue(msg, cmd, args, bot);
+	return new Save(msg, cmd, args, bot);
 };

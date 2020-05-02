@@ -1,6 +1,6 @@
 import { Message } from 'discord.js';
 import { Bot } from '../Bot';
-import { VideoInfo, DownloadObject } from '../util/Youtube';
+import { VideoInfo, DownloadObject, MP3DownloadObject } from '../util/Youtube';
 import { QueueVideo } from '../util/Queue';
 
 export class Play {

@@ -6,5 +6,6 @@
     "ownerID": "PSYCH_NO_ID_HERE",
     "tempFolder": "tmp",
     "download": true,
-    "autoplaylist": true
+    "autoplaylist": true,
+    "pastebin_key": "PSYCH_NO_KEY_HERE"
 }

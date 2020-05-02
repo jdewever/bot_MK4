@@ -1,8 +1,8 @@
 import { Bot } from '../Bot';
-import { Queue, QueueVideo } from './Queue';
+import { QueueVideo } from './Queue';
 import { StreamDispatcher, VoiceConnection, VoiceChannel, VoiceState } from 'discord.js';
 import { Readable } from 'stream';
-import { VideoInfo, DownloadObject } from './Youtube';
+import { VideoInfo, MP3DownloadObject } from './Youtube';
 
 export class Voice {
 	private bot: Bot;
@@ -17,7 +17,7 @@ export class Voice {
 		this.playingNow = null;
 		this.previousSpeakingState = false;
 		this.playopts = {
-			highWaterMark: 16,
+			highWaterMark: null,
 		};
 	}
 
@@ -70,35 +70,51 @@ export class Voice {
 			if (this.playing || !this.connected) return false;
 
 			if (this.bot.Queue.isEmpty()) {
-				if (!this.bot.config.autoplaylist) return null;
-				const url = this.bot.autoPL.get();
-				const info: VideoInfo = await this.bot.youtube.getInfo([url]);
-
-				const queueObj: QueueVideo = this.bot.Queue.convert(info, null);
-
-				if (this.bot.config.download) {
-					const down: DownloadObject = this.bot.youtube.download(queueObj);
-					down.stream.on('finish', () => {
-						queueObj.filePath = down.location;
-					});
-				}
-				this.bot.Queue.add(queueObj);
-			}
-
-			const song: QueueVideo = this.bot.Queue.get(1);
-
-			if (!song.filePath) {
-				const stream: Readable = this.bot.youtube.getStream(song.url);
-				this.registerStreamEvents(stream);
-				this.connection.play(stream, { ...this.playopts, ...{ volume: this.vol } });
+				this.useAutoPlaylist().then((res) => {
+					if (res == null) throw new Error();
+					this.playSong(this.bot.Queue.get(1));
+				});
 			} else {
-				this.connection.play(song.filePath, { ...this.playopts, ...{ volume: this.vol } });
+				this.playSong(this.bot.Queue.get(1));
 			}
-
-			this.registerDispatchEvents();
 		} catch (err) {
+			this.bot.log.Error('startPlaying()');
 			return this.startPlaying();
 		}
+	}
+
+	async useAutoPlaylist(): Promise<boolean> {
+		return new Promise(async (res, rej) => {
+			if (!this.bot.config.autoplaylist) res(null);
+			const url = this.bot.autoPL.get();
+			const info: VideoInfo = await this.bot.youtube.getInfo([url]);
+
+			const queueObj: QueueVideo = this.bot.Queue.convert(info, null);
+
+			if (this.bot.config.download) {
+				const down: MP3DownloadObject = this.bot.youtube.downloadMP3(queueObj);
+				down.stream.on('end', () => {
+					queueObj.filePath = down.location;
+					this.bot.Queue.add(queueObj);
+					res(true);
+				});
+			} else {
+				this.bot.Queue.add(queueObj);
+				res(false);
+			}
+		});
+	}
+
+	async playSong(song: QueueVideo) {
+		if (!song.filePath) {
+			this.bot.log.Event('Playing from stream');
+			const stream: Readable = this.bot.youtube.getStream(song.url);
+			this.connection.play(stream, { volume: this.vol });
+		} else {
+			this.bot.log.Event('Playing from stream');
+			this.connection.play(song.filePath, { volume: this.vol });
+		}
+		this.registerDispatchEvents();
 	}
 
 	get nowPlaying(): QueueVideo {
@@ -114,7 +130,7 @@ export class Voice {
 			this.bot.Presence.listening(this.playingNow.title);
 		});
 
-		dispatch.on('finish', async (reason) => {
+		dispatch.on('finish', (reason) => {
 			this.bot.log.Event(`(${new Date().toLocaleTimeString()}) Dispatcher finish`);
 			this.playingNow = null;
 			this.bot.Presence.idle();
@@ -133,6 +149,10 @@ export class Voice {
 				this.bot.log.Event(`(${new Date().toLocaleTimeString()}) Dispatcher speaking: ${bool}`);
 				this.previousSpeakingState = bool;
 			}
+		});
+
+		dispatch.on('debug', (info) => {
+			this.bot.log.Info(info);
 		});
 	}
 
@@ -155,7 +175,7 @@ export class Voice {
 			this.bot.log.Event(`(${new Date().toLocaleTimeString()}) Stream close`);
 		});
 		stream.on('resume', () => {
-			this.bot.log.Event(`(${new Date().toLocaleTimeString()}) Stream resume`);
+			//this.bot.log.Event(`(${new Date().toLocaleTimeString()}) Stream resume`);
 		});
 	}
 

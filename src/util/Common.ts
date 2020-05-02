@@ -1,7 +1,6 @@
 import { Client, Message } from 'discord.js';
 import { Bot, Logger } from '../Bot';
 import { Commands } from './Commands';
-import { type } from 'os';
 
 export class Common {
 	private bot: Bot;
