@@ -139,8 +139,25 @@ export class Youtube {
 
 		const downStream: Readable = this.getStream(obj.url);
 		const downPath: string = path.resolve(this.folder, `${obj.id}.mp3`);
+		const tmpPath: string = downPath + '.tmp';
 
-		const down = ffmpeg(downStream).audioBitrate(128).save(downPath);
+		fs.promises
+			.access(downPath)
+			.then(() => {
+				return null;
+			})
+			.catch((err) => {});
+
+		fs.promises
+			.access(tmpPath)
+			.then(() => {
+				fs.promises.unlink(tmpPath).then(() => {
+					this.bot.log.System('tmp file removed');
+				});
+			})
+			.catch((err) => {});
+
+		const down = ffmpeg(downStream).audioBitrate(128).outputFormat('mp3').save(tmpPath);
 
 		return { stream: down, location: downPath };
 	}

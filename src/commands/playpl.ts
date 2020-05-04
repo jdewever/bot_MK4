@@ -1,7 +1,7 @@
 import { Message } from 'discord.js';
 import { Bot } from '../Bot';
 import * as ytpl from 'ytpl';
-import { VideoInfo, DownloadObject } from '../util/Youtube';
+import { VideoInfo, DownloadObject, MP3DownloadObject } from '../util/Youtube';
 import { QueueVideo } from '../util/Queue';
 
 export class PlayPlaylist {
@@ -32,7 +32,7 @@ export class PlayPlaylist {
 
 					const newQueueObj: QueueVideo = this.bot.Queue.convert(info, this.msg.author);
 					if (this.bot.config.download) {
-						const down: DownloadObject = this.bot.youtube.download(newQueueObj);
+						const down: MP3DownloadObject = this.bot.youtube.downloadMP3(newQueueObj);
 						down.stream.on('finish', () => {
 							newQueueObj.filePath = down.location;
 						});

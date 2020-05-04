@@ -25,9 +25,9 @@ export class Play {
 			const newQueueObj: QueueVideo = this.bot.Queue.convert(info, this.msg.author);
 
 			if (this.bot.config.download) {
-				const down: DownloadObject = this.bot.youtube.download(newQueueObj);
+				const down: MP3DownloadObject = this.bot.youtube.downloadMP3(newQueueObj);
 				down.stream.on('finish', () => {
-                    newQueueObj.filePath = down.location;
+					newQueueObj.filePath = down.location;
 				});
 			}
 

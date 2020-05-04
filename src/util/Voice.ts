@@ -3,6 +3,7 @@ import { QueueVideo } from './Queue';
 import { StreamDispatcher, VoiceConnection, VoiceChannel, VoiceState } from 'discord.js';
 import { Readable } from 'stream';
 import { VideoInfo, MP3DownloadObject } from './Youtube';
+import * as fs from 'fs';
 
 export class Voice {
 	private bot: Bot;
@@ -72,11 +73,9 @@ export class Voice {
 			if (this.bot.Queue.isEmpty()) {
 				this.useAutoPlaylist().then((res) => {
 					if (res == null) throw new Error();
-					this.playSong(this.bot.Queue.get(1));
+					else this.playSong(this.bot.Queue.get(1));
 				});
-			} else {
-				this.playSong(this.bot.Queue.get(1));
-			}
+			} else this.playSong(this.bot.Queue.get(1));
 		} catch (err) {
 			this.bot.log.Error('startPlaying()');
 			return this.startPlaying();
@@ -94,9 +93,17 @@ export class Voice {
 			if (this.bot.config.download) {
 				const down: MP3DownloadObject = this.bot.youtube.downloadMP3(queueObj);
 				down.stream.on('end', () => {
-					queueObj.filePath = down.location;
-					this.bot.Queue.add(queueObj);
-					res(true);
+					fs.promises
+						.rename(down.location + '.tmp', down.location)
+						.then(() => {
+							this.bot.log.System('Downloaded file');
+							queueObj.filePath = down.location;
+							this.bot.Queue.add(queueObj);
+							res(true);
+						})
+						.catch((err) => {
+							res(false);
+						});
 				});
 			} else {
 				this.bot.Queue.add(queueObj);
@@ -111,7 +118,7 @@ export class Voice {
 			const stream: Readable = this.bot.youtube.getStream(song.url);
 			this.connection.play(stream, { volume: this.vol });
 		} else {
-			this.bot.log.Event('Playing from stream');
+			this.bot.log.Event('Playing from file');
 			this.connection.play(song.filePath, { volume: this.vol });
 		}
 		this.registerDispatchEvents();
