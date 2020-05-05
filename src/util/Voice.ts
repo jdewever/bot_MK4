@@ -87,6 +87,7 @@ export class Voice {
 			if (!this.bot.config.autoplaylist) res(null);
 			const url = this.bot.autoPL.get();
 			const info: VideoInfo = await this.bot.youtube.getInfo([url]);
+			if (!info) this.startPlaying();
 
 			const queueObj: QueueVideo = this.bot.Queue.convert(info, null);
 
@@ -96,7 +97,7 @@ export class Voice {
 					fs.promises
 						.rename(down.location + '.tmp', down.location)
 						.then(() => {
-							this.bot.log.System('Downloaded file');
+							// this.bot.log.Youtube('Downloaded file');
 							queueObj.filePath = down.location;
 							this.bot.Queue.add(queueObj);
 							res(true);
@@ -114,11 +115,12 @@ export class Voice {
 
 	async playSong(song: QueueVideo) {
 		if (!song.filePath) {
-			this.bot.log.Event('Playing from stream');
+			this.bot.log.Youtube('Playing from stream');
 			const stream: Readable = this.bot.youtube.getStream(song.url);
+			if (stream == null) throw new Error('playSong()');
 			this.connection.play(stream, { volume: this.vol });
 		} else {
-			this.bot.log.Event('Playing from file');
+			this.bot.log.Youtube('Playing from file');
 			this.connection.play(song.filePath, { volume: this.vol });
 		}
 		this.registerDispatchEvents();
@@ -132,34 +134,34 @@ export class Voice {
 		const dispatch: StreamDispatcher = this.dispatcher;
 
 		dispatch.on('start', () => {
-			this.bot.log.Event(`(${new Date().toLocaleTimeString()}) Dispatcher start`);
+			//this.bot.log.Youtube(`(${new Date().toLocaleTimeString()}) Dispatcher start`);
 			this.playingNow = this.bot.Queue.shift();
 			this.bot.Presence.listening(this.playingNow.title);
 		});
 
 		dispatch.on('finish', (reason) => {
-			this.bot.log.Event(`(${new Date().toLocaleTimeString()}) Dispatcher finish`);
+			//this.bot.log.Youtube(`(${new Date().toLocaleTimeString()}) Dispatcher finish`);
 			this.playingNow = null;
 			this.bot.Presence.idle();
-			this.bot.log.Event(`(${new Date().toLocaleTimeString()}) Dispatcher end`);
+			//this.bot.log.Youtube(`(${new Date().toLocaleTimeString()}) Dispatcher end`);
 			this.startPlaying();
 		});
 
 		dispatch.on('close', () => {
-			this.bot.log.Event(`(${new Date().toLocaleTimeString()}) Dispatcher close`);
+			this.bot.log.Youtube(`(${new Date().toLocaleTimeString()}) Dispatcher close`);
 		});
 		dispatch.on('error', (reason) => {
-			this.bot.log.Event(`(${new Date().toLocaleTimeString()}) Dispatcher error: ${reason}`);
+			this.bot.log.Error(`(${new Date().toLocaleTimeString()}) Dispatcher error: ${reason}`);
 		});
 		dispatch.on('speaking', (bool) => {
 			if (bool != this.previousSpeakingState) {
-				this.bot.log.Event(`(${new Date().toLocaleTimeString()}) Dispatcher speaking: ${bool}`);
+				//this.bot.log.Youtube(`(${new Date().toLocaleTimeString()}) Dispatcher speaking: ${bool}`);
 				this.previousSpeakingState = bool;
 			}
 		});
 
 		dispatch.on('debug', (info) => {
-			this.bot.log.Info(info);
+			this.bot.log.Debug(info);
 		});
 	}
 
@@ -173,16 +175,16 @@ export class Voice {
 
 	registerStreamEvents(stream: Readable) {
 		stream.on('error', (err) => {
-			this.bot.log.Error(`(${new Date().toLocaleTimeString()}) Stream error: ${err}`);
+			//this.bot.log.Error(`(${new Date().toLocaleTimeString()}) Stream error: ${err}`);
 		});
 		stream.on('end', () => {
-			this.bot.log.Event(`(${new Date().toLocaleTimeString()}) Stream end`);
+			//this.bot.log.Youtube(`(${new Date().toLocaleTimeString()}) Stream end`);
 		});
 		stream.on('close', () => {
-			this.bot.log.Event(`(${new Date().toLocaleTimeString()}) Stream close`);
+			//this.bot.log.Youtube(`(${new Date().toLocaleTimeString()}) Stream close`);
 		});
 		stream.on('resume', () => {
-			//this.bot.log.Event(`(${new Date().toLocaleTimeString()}) Stream resume`);
+			//this.bot.log.Youtube(`(${new Date().toLocaleTimeString()}) Stream resume`);
 		});
 	}
 

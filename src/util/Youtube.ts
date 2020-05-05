@@ -20,7 +20,7 @@ export class Youtube {
 			.mkdir(path.resolve(this.bot.rootFolder, this.bot.config.tempFolder), { recursive: true })
 			.then(() => {
 				this.folder = path.resolve(this.bot.rootFolder, this.bot.config.tempFolder);
-				this.bot.log.Info(`Temporary folder exists or created at: ${this.folder}`);
+				this.bot.log.Youtube(`Temporary folder exists or created at: ${this.folder}`);
 			})
 			.catch((err) => {
 				this.bot.log.Error("Can't create temp Folder" + err);
@@ -80,7 +80,12 @@ export class Youtube {
     */
 
 	getStream(url: string): Readable {
-		return ytdl(url, this.ytOptions);
+		try {
+			return ytdl(url, this.ytOptions);
+		} catch (err) {
+			this.bot.log.Error(err);
+			return null;
+		}
 	}
 
 	getPlID(url: string): string {
@@ -105,7 +110,7 @@ export class Youtube {
 				res(obj);
 			} catch (err) {
 				this.bot.log.Error('@ Youtube.getInfo()');
-				rej(err);
+				this.bot.voice.startPlaying();
 			}
 		});
 	}
@@ -135,31 +140,35 @@ export class Youtube {
 	}
 
 	downloadMP3(obj: QueueVideo): MP3DownloadObject {
-		if (!obj || !this.folder) return null;
+		try {
+			if (!obj || !this.folder) return null;
+			const downStream: Readable = this.getStream(obj.url);
+			if (downStream == null) return null;
+			const downPath: string = path.resolve(this.folder, `${obj.id}.mp3`);
+			const tmpPath: string = downPath + '.tmp';
 
-		const downStream: Readable = this.getStream(obj.url);
-		const downPath: string = path.resolve(this.folder, `${obj.id}.mp3`);
-		const tmpPath: string = downPath + '.tmp';
+			fs.promises
+				.access(downPath)
+				.then(() => {
+					return null;
+				})
+				.catch((err) => {});
 
-		fs.promises
-			.access(downPath)
-			.then(() => {
-				return null;
-			})
-			.catch((err) => {});
+			fs.promises
+				.access(tmpPath)
+				.then(() => {
+					fs.promises.unlink(tmpPath).then(() => {
+						this.bot.log.Youtube('tmp file removed');
+					});
+				})
+				.catch((err) => {});
 
-		fs.promises
-			.access(tmpPath)
-			.then(() => {
-				fs.promises.unlink(tmpPath).then(() => {
-					this.bot.log.System('tmp file removed');
-				});
-			})
-			.catch((err) => {});
+			const down = ffmpeg(downStream).audioBitrate(128).outputFormat('mp3').save(tmpPath);
 
-		const down = ffmpeg(downStream).audioBitrate(128).outputFormat('mp3').save(tmpPath);
-
-		return { stream: down, location: downPath };
+			return { stream: down, location: downPath };
+		} catch (err) {
+			this.bot.log.Error(err);
+		}
 	}
 }
 

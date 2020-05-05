@@ -40,6 +40,7 @@ export class Bot {
 			Warn: debug(`warn`),
 			Info: debug(`info`),
 			Debug: debug(`debug`),
+			Youtube: debug('youtube'),
 		};
 
 		this.config = require('./config.json');
@@ -75,4 +76,9 @@ export interface Logger {
 	Warn: debug.Debugger;
 	Info: debug.Debugger;
 	Debug: debug.Debugger;
+	Youtube: debug.Debugger;
 }
+
+process.on('uncaughtException', (err) => {
+	console.error(err);
+});

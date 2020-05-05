@@ -1,4 +1,4 @@
-import { Client, Message } from 'discord.js';
+import { Client, Message, Channel, TextChannel, DMChannel } from 'discord.js';
 import { Bot, Logger } from '../Bot';
 import { Commands } from './Commands';
 
@@ -30,6 +30,14 @@ export class Common {
 		returnTime += `${mins}:${secs < 10 ? '0' : ''}${secs}`;
 		return returnTime;
 	};
+
+	purgeChannelMessages = async (channel: Channel, limit: number) => {
+		if (channel.type != 'text') return;
+		let msgs = await (channel as TextChannel).messages.fetch({ limit: limit });
+		let toDelete = msgs.filter((m) => m.author.bot || m.content.startsWith(this.bot.config.prefix));
+
+		(channel as TextChannel).bulkDelete(toDelete);
+	};
 }
 
 const readyEvent = (bot: Bot) => {
@@ -40,6 +48,8 @@ const messageEvent = (bot: Bot, msg: Message, cmd: Commands) => {
 	if (!bot.currentGuild && msg.guild) {
 		bot.currentGuild = msg.guild;
 		bot.log.Event(`Found guild: ${bot.currentGuild}`);
+		bot.ch.purgeChannelMessages(msg.channel, 50);
+		bot.log.Event('First channel purged');
 	}
 
 	if (msg.author.bot || !msg.guild || !msg.content.startsWith(bot.config.prefix)) return false;
